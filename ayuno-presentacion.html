@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Ayuno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=Cinzel:wght@600;700;800;900&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600;1,700&family=IM+Fell+English:ital@0;1&family=Playfair+Display:ital,wght@0,700;0,800;0,900;1,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Otoño pastel (fondos) */
+    --parchment:#F7EBD8;
+    --parchment-2:#EFDCC0;
+    --peach:#F3D2B8;
+    --apricot:#EEC39E;
+    --rose:#E7C1B5;
+    --sage:#D5DCBC;
+    --mustard:#EFD9A0;
+    --terracotta:#E2B095;
+    --plum:#D9C0C8;
+    /* Tintas oscuras (texto) */
+    --ink:#2E1A10;
+    --oxblood:#6B1F1A;
+    --umber:#4A2A14;
+    --olive:#33401F;
+    --burnt:#8A3B12;
+    --gold:#9C6B1E;
+    --gold-soft:#C79A4B;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:#3a2416;}
+  body{
+    font-family:"Cormorant Garamond",Georgia,serif;
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ================= ESCENARIO ================= */
+  .deck{position:fixed;inset:0;}
+  .slide{
+    position:absolute;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    padding:clamp(18px,4vw,56px) clamp(16px,5vw,80px) clamp(80px,11vh,110px);
+    opacity:0;visibility:hidden;
+    transform:scale(.985);
+    transition:opacity .7s ease, transform .7s ease, visibility .7s;
+    background:
+      radial-gradient(ellipse at 15% 10%, rgba(255,255,255,.55), transparent 55%),
+      radial-gradient(ellipse at 90% 95%, rgba(138,59,18,.13), transparent 60%),
+      radial-gradient(ellipse at 50% 50%, var(--bg1,var(--parchment)) 0%, var(--bg2,var(--parchment-2)) 100%);
+  }
+  .slide::before{ /* vignette de pergamino */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    box-shadow: inset 0 0 160px rgba(90,45,15,.35), inset 0 0 40px rgba(90,45,15,.25);
+  }
+  .slide.active{opacity:1;visibility:visible;transform:scale(1);z-index:2}
+
+  /* Paletas por diapositiva */
+  .s-peach{--bg1:#FAE6D6;--bg2:var(--peach)}
+  .s-sage{--bg1:#EEF1DF;--bg2:var(--sage)}
+  .s-rose{--bg1:#F7E3DC;--bg2:var(--rose)}
+  .s-mustard{--bg1:#FAEFD0;--bg2:var(--mustard)}
+  .s-terra{--bg1:#F6DCCB;--bg2:var(--terracotta)}
+  .s-plum{--bg1:#F2E5E8;--bg2:var(--plum)}
+  .s-apricot{--bg1:#FBE5D0;--bg2:var(--apricot)}
+
+  /* ================= MARCO RENACENTISTA ================= */
+  .frame{
+    position:relative;width:min(1180px,100%);max-height:100%;
+    padding:clamp(22px,4vw,56px) clamp(18px,4.5vw,64px);
+    border:2px solid var(--gold);
+    outline:1px solid var(--gold-soft);outline-offset:-10px;
+    background:rgba(255,250,240,.38);
+    box-shadow:0 18px 50px rgba(74,42,20,.18);
+    overflow-y:auto;
+    scrollbar-width:thin;scrollbar-color:var(--gold-soft) transparent;
+  }
+  .frame::-webkit-scrollbar{width:6px}
+  .frame::-webkit-scrollbar-thumb{background:var(--gold-soft);border-radius:6px}
+  .corner{position:absolute;width:38px;height:38px;color:var(--gold);font-size:30px;line-height:38px;text-align:center;pointer-events:none}
+  .corner.tl{top:-4px;left:-2px}.corner.tr{top:-4px;right:-2px;transform:scaleX(-1)}
+  .corner.bl{bottom:-4px;left:-2px;transform:scaleY(-1)}.corner.br{bottom:-4px;right:-2px;transform:scale(-1,-1)}
+
+  .center{text-align:center}
+  .kicker{
+    font-family:"Cinzel",serif;font-weight:800;letter-spacing:.32em;text-transform:uppercase;
+    font-size:clamp(.72rem,1.2vw,.95rem);color:var(--burnt);margin-bottom:.8em;
+  }
+  h1,h2{font-family:"Cinzel Decorative","Cinzel",serif;font-weight:900;color:var(--oxblood);line-height:1.08}
+  h1{font-size:clamp(2.8rem,9vw,7rem);text-shadow:2px 2px 0 rgba(199,154,75,.35)}
+  h2{font-size:clamp(1.8rem,4.6vw,3.4rem);margin-bottom:.35em}
+  h3{font-family:"Playfair Display",serif;font-weight:900;color:var(--umber);font-size:clamp(1.15rem,2.2vw,1.6rem)}
+  p,li{font-size:clamp(1.15rem,2.1vw,1.6rem);font-weight:700;line-height:1.45;color:var(--ink)}
+  .fell{font-family:"IM Fell English",serif}
+  em,.italic{font-style:italic}
+  strong{color:var(--oxblood);font-weight:700}
+
+  .ornament{
+    display:flex;align-items:center;justify-content:center;gap:.8em;
+    color:var(--gold);font-size:clamp(1.1rem,2vw,1.6rem);margin:.6em auto 1em;
+  }
+  .ornament::before,.ornament::after{content:"";height:2px;width:min(140px,22vw);background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+  /* Capitular */
+  .dropcap::first-letter{
+    font-family:"Cinzel Decorative",serif;font-weight:900;float:left;
+    font-size:3.6em;line-height:.85;padding:.06em .12em 0 0;color:var(--oxblood);
+  }
+
+  /* ================= PORTADA ================= */
+  .subtitle{font-family:"IM Fell English",serif;font-style:italic;font-size:clamp(1.2rem,2.6vw,2rem);color:var(--umber);margin-top:.4em}
+
+  /* ================= PREGUNTA ================= */
+  .question{
+    font-family:"Playfair Display",serif;font-weight:900;font-style:italic;
+    font-size:clamp(2.2rem,6.5vw,5.2rem);color:var(--oxblood);line-height:1.1;
+  }
+  .question .qmark{color:var(--burnt)}
+
+  /* ================= FÓRMULA ================= */
+  .formula{
+    display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.25em .45em;
+    font-family:"Cinzel",serif;font-weight:900;color:var(--oxblood);
+    font-size:clamp(2.4rem,8vw,6.2rem);line-height:1.05;margin:.2em 0 .3em;
+  }
+  .formula .op{font-family:"Playfair Display",serif;color:var(--burnt)}
+  .formula .eq{color:var(--gold)}
+  .formula .him{color:var(--oxblood)}
+  .formula .me{color:var(--olive)}
+  .verse{
+    max-width:880px;margin:.9em auto 0;padding:.9em 1.2em;
+    border-left:4px solid var(--gold);background:rgba(255,248,232,.55);text-align:left;
+  }
+  .verse p{font-family:"IM Fell English",serif;font-style:italic;font-weight:400;font-size:clamp(1.15rem,2.2vw,1.65rem)}
+  .verse cite{display:block;margin-top:.35em;font-family:"Cinzel",serif;font-style:normal;font-weight:800;letter-spacing:.08em;font-size:clamp(.85rem,1.4vw,1.05rem);color:var(--burnt)}
+  .verse + .verse{margin-top:.7em}
+
+  /* ================= DEFINICIÓN ================= */
+  .definition{
+    font-family:"Playfair Display",serif;font-weight:800;font-style:italic;
+    font-size:clamp(1.4rem,3vw,2.3rem);line-height:1.35;color:var(--umber);
+    max-width:960px;margin:0 auto;
+  }
+  .definition b{color:var(--oxblood);font-style:normal}
+  .tags{display:flex;flex-wrap:wrap;gap:.8em;justify-content:center;margin-top:1.3em}
+  .tag{
+    font-family:"Cinzel",serif;font-weight:800;font-size:clamp(1rem,1.9vw,1.4rem);
+    padding:.5em 1.1em;border:2px solid var(--gold);background:rgba(255,248,232,.7);color:var(--oxblood);
+  }
+  .note{font-family:"IM Fell English",serif;font-style:italic;font-weight:400;color:var(--umber);margin-top:1em;font-size:clamp(1rem,1.8vw,1.3rem)}
+
+  /* ================= TARJETAS DESPLEGABLES ================= */
+  .type-head{display:flex;align-items:baseline;justify-content:center;gap:.6em;flex-wrap:wrap;margin-bottom:.2em}
+  .type-desc{font-family:"IM Fell English",serif;font-style:italic;font-weight:400;font-size:clamp(1.1rem,2vw,1.5rem);color:var(--umber);text-align:center}
+  .hint{font-family:"Cinzel",serif;font-weight:700;font-size:clamp(.7rem,1.1vw,.85rem);letter-spacing:.18em;color:var(--burnt);text-align:center;margin:.6em 0 1em;text-transform:uppercase}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px;align-items:start}
+  .card{
+    border:2px solid var(--gold-soft);background:rgba(255,250,240,.78);
+    transition:box-shadow .3s, transform .3s, background .3s;
+  }
+  .card:hover{box-shadow:0 8px 22px rgba(74,42,20,.18);transform:translateY(-2px)}
+  .card.open{background:rgba(255,252,246,.95);border-color:var(--gold)}
+  .card-btn{
+    width:100%;display:flex;align-items:center;justify-content:space-between;gap:.6em;
+    padding:.8em 1em;background:none;border:0;cursor:pointer;text-align:left;color:inherit;
+  }
+  .card-btn .ref{font-family:"Cinzel",serif;font-weight:900;font-size:clamp(1.05rem,1.8vw,1.35rem);color:var(--oxblood)}
+  .card-btn .who{display:block;font-family:"Playfair Display",serif;font-weight:700;font-style:italic;font-size:clamp(.95rem,1.5vw,1.1rem);color:var(--olive);margin-top:.15em}
+  .card-btn .chev{
+    flex:none;width:30px;height:30px;border-radius:50%;border:2px solid var(--gold);
+    display:grid;place-items:center;color:var(--gold);font-weight:900;font-family:"Cinzel",serif;
+    transition:transform .35s;
+  }
+  .card.open .chev{transform:rotate(45deg);background:var(--gold);color:#fff8ea}
+  .card-body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .45s ease}
+  .card.open .card-body{grid-template-rows:1fr}
+  .card-body > div{overflow:hidden}
+  .card-body p{
+    font-family:"Cormorant Garamond",serif;font-weight:600;font-size:clamp(1.02rem,1.6vw,1.22rem);
+    line-height:1.45;padding:0 1.1em 1em;color:var(--ink);border-top:1px dashed var(--gold-soft);padding-top:.8em;margin:0 .2em;
+  }
+
+  /* ================= LISTAS QUE SE DESPLIEGAN ================= */
+  .reveal-list{list-style:none;max-width:900px;margin:.4em auto 0;display:grid;gap:14px}
+  .reveal-list li{
+    display:flex;align-items:center;gap:.9em;
+    padding:.75em 1.1em;border:2px solid var(--gold-soft);background:rgba(255,250,240,.75);
+    font-family:"Playfair Display",serif;font-weight:800;font-size:clamp(1.15rem,2.3vw,1.75rem);color:var(--umber);
+  }
+  .reveal-list li small{display:block;font-family:"IM Fell English",serif;font-style:italic;font-weight:400;font-size:.68em;color:var(--olive);margin-top:.15em}
+  .numeral{
+    flex:none;width:2.1em;height:2.1em;display:grid;place-items:center;
+    font-family:"Cinzel Decorative",serif;font-weight:900;font-size:.85em;
+    color:#fff8ea;background:var(--oxblood);border:2px solid var(--gold);border-radius:50%;
+  }
+  .fragment{opacity:0;transform:translateY(18px);transition:opacity .55s ease, transform .55s ease;pointer-events:none}
+  .fragment.visible{opacity:1;transform:none;pointer-events:auto}
+
+  .x-list li .numeral{background:var(--burnt)}
+
+  .big-statement{
+    font-family:"Playfair Display",serif;font-weight:900;font-size:clamp(1.6rem,3.6vw,2.8rem);
+    line-height:1.3;color:var(--oxblood);max-width:980px;margin:0 auto;
+  }
+  .big-statement .soft{color:var(--umber);font-style:italic;font-weight:700}
+
+  .closing-formula{font-size:clamp(2rem,6vw,4.4rem);margin-top:.5em}
+
+  /* ================= BENDICIÓN ================= */
+  .blessing .halo{
+    position:absolute;left:50%;top:45%;width:min(80vw,760px);aspect-ratio:1;
+    transform:translate(-50%,-50%);border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle, rgba(239,217,160,.75) 0%, rgba(238,195,158,.35) 40%, transparent 70%);
+    animation:halo 6s ease-in-out infinite;
+  }
+  @keyframes halo{
+    0%,100%{transform:translate(-50%,-50%) scale(.92);opacity:.7}
+    50%{transform:translate(-50%,-50%) scale(1.06);opacity:1}
+  }
+  .blessing .frame{background:rgba(255,250,240,.28)}
+  .bless-title{font-size:clamp(3rem,10vw,7.5rem);display:flex;flex-wrap:wrap;justify-content:center;gap:0 .3em}
+  .bless-title span{display:inline-block;opacity:0;transform:translateY(14px);filter:blur(4px)}
+  .blessing.active .bless-title span{animation:rise 1.4s cubic-bezier(.2,.7,.2,1) var(--d) forwards}
+  @keyframes rise{to{opacity:1;transform:none;filter:blur(0)}}
+  .blessing .bless-orn{opacity:0}
+  .blessing.active .bless-orn{animation:fadeIn 1.6s ease 1.6s forwards}
+  .blessing.active .bless-orn-2{animation-delay:1.9s}
+  @keyframes fadeIn{to{opacity:1}}
+
+  /* ================= NAVEGACIÓN ================= */
+  .nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:10;
+    display:flex;align-items:center;justify-content:center;gap:clamp(12px,3vw,28px);
+    padding:12px 16px 16px;
+    background:linear-gradient(to top, rgba(58,36,22,.55), transparent);
+  }
+  .nav button{
+    width:52px;height:52px;border-radius:50%;cursor:pointer;
+    border:2px solid var(--gold);background:var(--parchment);color:var(--oxblood);
+    font-family:"Cinzel",serif;font-weight:900;font-size:1.4rem;
+    box-shadow:0 4px 14px rgba(0,0,0,.25);transition:transform .2s, background .2s;
+  }
+  .nav button:hover:not(:disabled){transform:scale(1.08);background:var(--mustard)}
+  .nav button:disabled{opacity:.4;cursor:default}
+  .counter{
+    font-family:"Cinzel",serif;font-weight:800;color:var(--parchment);letter-spacing:.15em;
+    min-width:90px;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.6);
+  }
+  .progress{position:fixed;top:0;left:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--burnt));z-index:11;transition:width .5s ease}
+  .fs-btn{
+    position:fixed;top:12px;right:14px;z-index:11;
+    border:2px solid var(--gold);background:rgba(247,235,216,.85);color:var(--oxblood);
+    font-family:"Cinzel",serif;font-weight:800;font-size:.75rem;letter-spacing:.12em;padding:.45em .8em;cursor:pointer;
+  }
+
+  @media (max-width:600px){
+    .nav button{width:44px;height:44px;font-size:1.15rem}
+    .corner{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<button class="fs-btn" id="fsBtn" title="Pantalla completa (F)">⛶ PANTALLA</button>
+
+<main class="deck" id="deck">
+
+  <!-- 1. PORTADA -->
+  <section class="slide s-apricot">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">Estudio Bíblico</div>
+      <h1>El Ayuno</h1>
+      <div class="ornament">✠</div>
+      <p class="subtitle">Afligir el alma para que Él sea exaltado</p>
+    </div>
+  </section>
+
+  <!-- 2. PREGUNTA -->
+  <section class="slide s-sage">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">Dinámica</div>
+      <p class="question"><span class="qmark">¿</span>Qué crees que es el ayuno<span class="qmark">?</span></p>
+      <div class="ornament">❧</div>
+      <p class="fell italic" style="font-weight:400;color:var(--umber)">Compartamos nuestras ideas…</p>
+    </div>
+  </section>
+
+  <!-- 3. FÓRMULA CENTRAL -->
+  <section class="slide s-mustard">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">Frase central del estudio</div>
+      <div class="formula" aria-label="Más de Él es igual a menos de mí">
+        <span class="op">+</span><span class="him">de Él</span>
+        <span class="eq">=</span>
+        <span class="op">−</span><span class="me">de mí</span>
+      </div>
+      <div class="ornament">✠</div>
+      <div class="verse">
+        <p>“Es necesario que Él crezca, y que yo disminuya.”</p>
+        <cite>Juan 3:30 · LBLA</cite>
+      </div>
+      <div class="verse">
+        <p>“A Él le toca crecer, y a mí menguar.”</p>
+        <cite>Juan 3:30 · NVI</cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. DEFINICIÓN -->
+  <section class="slide s-peach">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">¿Qué es el ayuno?</div>
+      <h2>Según la Biblia</h2>
+      <div class="ornament">❧</div>
+      <p class="definition">“Es el acto de <b>dejar de ingerir alimento, ni agua</b>, en un lapso de tiempo, con un <b>propósito trascendental</b>.”</p>
+      <div class="tags">
+        <span class="tag">Afligir el alma</span>
+        <span class="tag">Humillarse ante Dios</span>
+      </div>
+      <p class="note">Así se describe en la tradición judía.</p>
+    </div>
+  </section>
+
+  <!-- 5. AYUNO TOTAL -->
+  <section class="slide s-terra">
+    <div class="frame">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker center">Tipos de ayuno según la Biblia · I</div>
+      <div class="type-head"><h2>Ayuno Total</h2></div>
+      <p class="type-desc">Abstenerse de comida y de agua.</p>
+      <p class="hint">❦ Toca cada historia para desplegarla ❦</p>
+      <div class="cards">
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Éxodo 34:27-28</span><span class="who">Moisés en el monte</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Moisés estuvo con el Señor cuarenta días y cuarenta noches; no comió pan ni bebió agua. Allí escribió en las tablas las palabras del pacto: los diez mandamientos.</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Daniel 10:2-3</span><span class="who">Daniel en duelo</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Daniel estuvo afligido durante tres semanas completas. No comió manjar delicado, ni entró en su boca carne ni vino, ni se ungió hasta que se cumplieron los días.</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Mateo 4:1-2</span><span class="who">Jesús en el desierto</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Jesús fue llevado por el Espíritu al desierto para ser tentado. Ayunó cuarenta días y cuarenta noches, y después tuvo hambre.</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Ester 4:15-16</span><span class="who">Ester ante el rey</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Antes de presentarse ante el rey sin ser llamada, Ester pidió a Mardoqueo reunir a los judíos de Susa para ayunar por ella: tres días, noche y día, sin comer ni beber. Ella y sus doncellas harían lo mismo. “Y si perezco, que perezca.”</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Jonás 3:5-10</span><span class="who">El arrepentimiento de Nínive</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Los ninivitas creyeron a Dios, proclamaron ayuno y se vistieron de cilicio, del mayor al menor. El rey mandó que ni hombres ni animales probaran alimento ni bebieran agua, y que todos se volvieran de su mal camino. Dios vio que se convirtieron, y no envió el castigo anunciado.</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">Hechos 13:2-3</span><span class="who">La iglesia en Antioquía</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Mientras ministraban al Señor y ayunaban, el Espíritu Santo dijo: “Apártenme a Bernabé y a Saulo para la obra a que los he llamado.” Entonces, habiendo ayunado y orado, les impusieron las manos y los enviaron.</p></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. AYUNO ABSOLUTO -->
+  <section class="slide s-plum">
+    <div class="frame">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker center">Tipos de ayuno según la Biblia · II</div>
+      <div class="type-head"><h2>Ayuno Absoluto</h2></div>
+      <p class="type-desc">Abstenerse de comida.</p>
+      <p class="hint">❦ Toca cada historia para desplegarla ❦</p>
+      <div class="cards">
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">2 Samuel 12:15-23</span><span class="who">David por su hijo</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Cuando el hijo de David enfermó gravemente, David rogó a Dios por el niño, ayunó y pasó las noches acostado en tierra. Al séptimo día el niño murió; David se levantó, se lavó, adoró en la casa del Señor y luego comió: “Yo iré a él, mas él no volverá a mí.”</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">2 Samuel 1:11-12</span><span class="who">Duelo por Saúl y Jonatán</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Al recibir la noticia de la muerte de Saúl y de Jonatán, David y todos sus hombres rasgaron sus vestidos, hicieron duelo, lloraron y ayunaron hasta la tarde por ellos y por el pueblo del Señor.</p></div></div>
+        </article>
+        <article class="card">
+          <button class="card-btn" aria-expanded="false">
+            <span><span class="ref">1 Samuel 7:5-6</span><span class="who">Israel en Mizpa</span></span><span class="chev">+</span>
+          </button>
+          <div class="card-body"><div><p>Samuel reunió a todo Israel en Mizpa para orar por ellos. Sacaron agua y la derramaron delante del Señor, ayunaron aquel día y confesaron: “Contra el Señor hemos pecado.”</p></div></div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. NO ES SOLO DEJAR DE COMER -->
+  <section class="slide s-rose">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">Entonces…</div>
+      <h2>No es solo dejar de comer</h2>
+      <div class="ornament">✠</div>
+      <p class="big-statement">
+        <span class="soft">El ayuno no es dejar de ingerir alimentos sin más,</span><br>
+        sino el acto de <u>afligir nuestra alma</u> y <u>humillarnos</u>,
+        para que <strong>Dios sea exaltado en nosotros</strong>.
+      </p>
+    </div>
+  </section>
+
+  <!-- 8. EL AYUNO TIENE QUE TENER -->
+  <section class="slide s-sage">
+    <div class="frame">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker center">Fundamentos</div>
+      <h2 class="center">El ayuno tiene que tener</h2>
+      <div class="ornament">❧</div>
+      <ol class="reveal-list">
+        <li class="fragment"><span class="numeral">I</span><span>Propósito e intención</span></li>
+        <li class="fragment"><span class="numeral">II</span><span>Tiempo establecido<small>Exceptuando los que son impuestos por Dios</small></span></li>
+        <li class="fragment"><span class="numeral">III</span><span>Tiempo de acercamiento a Dios</span></li>
+        <li class="fragment"><span class="numeral">IV</span><span>Tiempo de reflexión antes y después del ayuno</span></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- 9. POR QUÉ AYUNAR -->
+  <section class="slide s-mustard">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">El llamado</div>
+      <h2>¿Por qué ayunar?</h2>
+      <div class="ornament">✠</div>
+      <div class="verse">
+        <p>“Por eso pues ahora, dice Jehová, convertíos a mí con todo vuestro corazón, con ayuno y lloro y llanto.”</p>
+        <cite>Joel 2:12 · RV1909</cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10. CUÁNDO NO AYUNAR -->
+  <section class="slide s-terra">
+    <div class="frame">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker center">Discernimiento</div>
+      <h2 class="center">¿Cuándo no ayunar?</h2>
+      <div class="ornament">❧</div>
+      <ul class="reveal-list x-list">
+        <li class="fragment"><span class="numeral">✕</span><span>En fiestas<small>Cumpleaños, bodas, celebraciones</small></span></li>
+        <li class="fragment"><span class="numeral">✕</span><span>Cuando no tenemos propósitos claros del ayuno que haremos</span></li>
+        <li class="fragment"><span class="numeral">✕</span><span>Cuando salimos de la casa sin desayunar</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 11. EN SECRETO -->
+  <section class="slide s-peach">
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker">Enseñanza de Jesús</div>
+      <h2>Un ayuno en lo secreto</h2>
+      <div class="ornament">✠</div>
+      <p class="big-statement" style="font-size:clamp(1.3rem,2.8vw,2.1rem)">Cuando ayunamos, <strong>no debemos mostrarle al mundo</strong> que estamos ayunando.</p>
+      <div class="verse">
+        <p>“Y cuando ayunáis, no seáis como los hipócritas, austeros; porque ellos demudan sus rostros para parecer a los hombres que ayunan: de cierto os digo, que ya tienen su pago.”</p>
+        <cite>Mateo 6:16 · RV1909</cite>
+      </div>
+    </div>
+  </section>
+
+  <!-- 12. CONCLUSIÓN -->
+  <section class="slide s-apricot">
+    <div class="frame">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="kicker center">Conclusión</div>
+      <h2 class="center">El ayuno debe hacerse…</h2>
+      <div class="ornament">❧</div>
+      <ol class="reveal-list">
+        <li class="fragment"><span class="numeral">I</span><span>Con intención</span></li>
+        <li class="fragment"><span class="numeral">II</span><span>Con propósito</span></li>
+        <li class="fragment"><span class="numeral">III</span><span>Recordando que Cristo debe crecer en nosotros, mientras nosotros menguamos</span></li>
+      </ol>
+      <div class="formula closing-formula fragment" aria-label="Más de Él es igual a menos de mí">
+        <span class="op">+</span><span class="him">de Él</span>
+        <span class="eq">=</span>
+        <span class="op">−</span><span class="me">de mí</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 13. BENDICIÓN -->
+  <section class="slide s-peach blessing">
+    <div class="halo" aria-hidden="true"></div>
+    <div class="frame center">
+      <span class="corner tl">❦</span><span class="corner tr">❦</span><span class="corner bl">❦</span><span class="corner br">❦</span>
+      <div class="ornament bless-orn">✠</div>
+      <h1 class="bless-title">
+        <span style="--d:.2s">Dios</span>
+        <span style="--d:.6s">te</span>
+        <span style="--d:1s">bendiga</span>
+      </h1>
+      <div class="ornament bless-orn bless-orn-2">❦</div>
+    </div>
+  </section>
+
+</main>
+
+<nav class="nav" aria-label="Navegación de diapositivas">
+  <button id="prevBtn" aria-label="Anterior">❮</button>
+  <span class="counter" id="counter">1 / 12</span>
+  <button id="nextBtn" aria-label="Siguiente">❯</button>
+</nav>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const counter = document.getElementById('counter');
+  const progress = document.getElementById('progress');
+  let current = 0;
+
+  const frags = s => [...s.querySelectorAll('.fragment')];
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === current));
+    counter.textContent = `${current + 1} / ${slides.length}`;
+    progress.style.width = `${((current + 1) / slides.length) * 100}%`;
+    const pending = frags(slides[current]).some(f => !f.classList.contains('visible'));
+    prevBtn.disabled = current === 0 && !frags(slides[0]).some(f => f.classList.contains('visible'));
+    nextBtn.disabled = current === slides.length - 1 && !pending;
+    try { history.replaceState(null, '', '#' + (current + 1)); } catch (e) {}
+  }
+
+  function goTo(i, showAll = false) {
+    if (i < 0 || i >= slides.length) return;
+    current = i;
+    frags(slides[i]).forEach(f => f.classList.toggle('visible', showAll));
+    const frame = slides[i].querySelector('.frame');
+    if (frame) frame.scrollTop = 0;
+    render();
+  }
+
+  function next() {
+    const hidden = frags(slides[current]).filter(f => !f.classList.contains('visible'));
+    if (hidden.length) {
+      hidden[0].classList.add('visible');
+      hidden[0].scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      render();
+    } else {
+      goTo(current + 1);
+    }
+  }
+
+  function prev() {
+    const shown = frags(slides[current]).filter(f => f.classList.contains('visible'));
+    if (shown.length) {
+      shown[shown.length - 1].classList.remove('visible');
+      render();
+    } else {
+      goTo(current - 1, true);
+    }
+  }
+
+  prevBtn.addEventListener('click', e => { e.stopPropagation(); prev(); });
+  nextBtn.addEventListener('click', e => { e.stopPropagation(); next(); });
+
+  // Tarjetas desplegables
+  document.querySelectorAll('.card-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const card = btn.closest('.card');
+      const open = card.classList.toggle('open');
+      btn.setAttribute('aria-expanded', open);
+    });
+  });
+
+  // Clic en la diapositiva para avanzar
+  document.getElementById('deck').addEventListener('click', e => {
+    if (e.target.closest('.card, button, a')) return;
+    if (window.getSelection().toString()) return;
+    next();
+  });
+
+  // Teclado
+  document.addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('.card-btn') && (e.key === ' ' || e.key === 'Enter')) return;
+    switch (e.key) {
+      case 'ArrowRight': case 'PageDown': case ' ': case 'Enter':
+        e.preventDefault(); next(); break;
+      case 'ArrowLeft': case 'PageUp': case 'Backspace':
+        e.preventDefault(); prev(); break;
+      case 'Home': goTo(0); break;
+      case 'End': goTo(slides.length - 1, true); break;
+      case 'f': case 'F': toggleFS(); break;
+    }
+  });
+
+  // Deslizar en pantallas táctiles
+  let tx = null, ty = null;
+  document.addEventListener('touchstart', e => { tx = e.touches[0].clientX; ty = e.touches[0].clientY; }, { passive: true });
+  document.addEventListener('touchend', e => {
+    if (tx === null) return;
+    const dx = e.changedTouches[0].clientX - tx;
+    const dy = e.changedTouches[0].clientY - ty;
+    if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy)) dx < 0 ? next() : prev();
+    tx = ty = null;
+  });
+
+  // Pantalla completa
+  function toggleFS() {
+    try {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    } catch (e) {}
+  }
+  document.getElementById('fsBtn').addEventListener('click', e => { e.stopPropagation(); toggleFS(); });
+
+  // Abrir en la diapositiva del hash (#n)
+  const start = parseInt(location.hash.slice(1), 10);
+  goTo(Number.isInteger(start) && start >= 1 && start <= slides.length ? start - 1 : 0);
+})();
+</script>
+</body>
+</html>
